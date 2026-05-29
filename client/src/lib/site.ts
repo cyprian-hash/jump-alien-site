@@ -6,7 +6,11 @@
 export const APP_STORE_URL = "https://apps.apple.com/us/app/jump-alien/";
 
 // Support inbox surfaced in privacy + support pages.
-export const SUPPORT_EMAIL = "support@jumpalien.app";
+export const SUPPORT_EMAIL = "support@jumpalien.com";
+
+// Canonical absolute origin — used for OG/Twitter image URLs and any
+// place a link needs to be absolute. Update if the domain ever changes.
+export const SITE_URL = "https://jumpalien.com";
 
 // Used in <title>, OpenGraph, and footer.
 export const SITE_NAME = "Jump Alien";
