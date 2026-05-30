@@ -1,9 +1,9 @@
 // Single source of truth for site-wide constants. Update these in one place
 // after creating the App Store Connect record and the support inbox.
 
-// Replace with the real App Store URL once the new app record is created.
-// Example shape: https://apps.apple.com/us/app/jump-alien/id1234567890
-export const APP_STORE_URL = "https://apps.apple.com/us/app/jump-alien/";
+// Live App Store URL for Jump Alien (bundle: com.jumpalien.lite, Apple ID 964680187).
+// The 2.0 update will surface at this same URL when Apple approves the build.
+export const APP_STORE_URL = "https://apps.apple.com/us/app/jump-alien/id964680187";
 
 // Support inbox surfaced in privacy + support pages.
 export const SUPPORT_EMAIL = "support@jumpalien.com";
