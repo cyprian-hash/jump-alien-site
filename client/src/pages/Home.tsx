@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { APP_STORE_URL } from "@/lib/site";
+import { IPhoneFrame } from "@/components/IPhoneFrame";
 
 /**
  * Jump Alien Home Page
@@ -87,32 +88,19 @@ function AppStoreBadge() {
       href={APP_STORE_URL}
       target="_blank"
       rel="noopener noreferrer"
+      aria-label="Download Jump Alien on the App Store"
       className="inline-block transition-transform duration-200 hover:scale-105 active:scale-95"
     >
-      <svg
-        viewBox="0 0 120 40"
+      {/* Official Apple App Store badge (US English, black lockup).
+          Sourced from Apple's marketing toolkit. Required by Apple's
+          brand guidelines for any App Store linking. */}
+      <img
+        src="/assets/app-store-badge.svg"
+        alt="Download on the App Store"
         className="h-12 md:h-14"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect width="120" height="40" rx="5" fill="#000" />
-        <rect x="0.5" y="0.5" width="119" height="39" rx="4.5" stroke="#a6a6a6" fill="none" />
-        <text x="42" y="13" fill="#fff" fontSize="5" fontFamily="'Space Grotesk', sans-serif">
-          Download on the
-        </text>
-        <text x="42" y="27" fill="#fff" fontSize="11" fontFamily="'Space Grotesk', sans-serif" fontWeight="600">
-          App Store
-        </text>
-        <g transform="translate(10, 6) scale(0.55)">
-          <path
-            d="M24.769 20.3a5.9 5.9 0 0 1 2.81-4.95 6.04 6.04 0 0 0-4.76-2.57c-2-.21-3.97 1.2-5 1.2-1.04 0-2.6-1.18-4.3-1.15a6.33 6.33 0 0 0-5.33 3.25c-2.3 3.98-.59 9.85 1.62 13.08 1.1 1.58 2.4 3.35 4.1 3.29 1.66-.07 2.28-1.06 4.28-1.06 1.99 0 2.56 1.06 4.3 1.02 1.78-.03 2.9-1.59 3.96-3.18a13.2 13.2 0 0 0 1.8-3.68 5.7 5.7 0 0 1-3.47-5.25z"
-            fill="#fff"
-          />
-          <path
-            d="M22.037 10.67a5.8 5.8 0 0 0 1.33-4.17 5.9 5.9 0 0 0-3.83 1.98 5.52 5.52 0 0 0-1.36 4 4.88 4.88 0 0 0 3.86-1.81z"
-            fill="#fff"
-          />
-        </g>
-      </svg>
+        width={160}
+        height={48}
+      />
     </a>
   );
 }
@@ -366,14 +354,14 @@ export default function Home() {
           </ScrollReveal>
 
           <ScrollReveal>
-            <div className="max-w-4xl mx-auto">
-              <div className="glass-card rounded-2xl overflow-hidden border border-border/30">
+            <div className="max-w-5xl mx-auto px-2">
+              <IPhoneFrame orientation="landscape">
                 <img
-                  src="/assets/gameplay.png"
-                  alt="Jump Alien gameplay screenshot"
-                  className="w-full h-auto"
+                  src="/assets/gameplay-2x.png"
+                  alt="Jump Alien gameplay: alien in spaceship with flame trail soaring over the lunar surface"
+                  className="block w-full h-auto"
                 />
-              </div>
+              </IPhoneFrame>
             </div>
           </ScrollReveal>
 
