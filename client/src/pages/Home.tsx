@@ -209,16 +209,21 @@ export default function Home() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/30">
         <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-3 group"
+            aria-label="Jump Alien — back to home"
+          >
             <img
               src="/assets/alien.png"
               alt="Jump Alien character"
-              className="w-10 h-10 object-contain"
+              className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-200"
             />
             <span className="font-game text-xl text-alien-green hidden sm:inline">
               Jump Alien
             </span>
-          </div>
+          </Link>
           <div className="flex items-center gap-6">
             <a
               href="#features"
@@ -431,16 +436,21 @@ export default function Home() {
       <footer className="relative z-10 border-t border-border/30 py-12">
         <div className="container">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex items-center gap-3 group"
+              aria-label="Jump Alien — back to top"
+            >
               <img
                 src="/assets/alien.png"
                 alt="Jump Alien"
-                className="w-8 h-8 object-contain"
+                className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-200"
               />
               <span className="font-game text-lg text-alien-green">
                 Jump Alien
               </span>
-            </div>
+            </Link>
 
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link href="/privacy" className="hover:text-foreground transition-colors">

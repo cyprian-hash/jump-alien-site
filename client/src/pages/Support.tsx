@@ -10,7 +10,12 @@ export default function Support() {
     <div className="min-h-screen bg-background text-foreground">
       <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/30">
         <div className="container flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link
+            href="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: "auto" })}
+            className="flex items-center gap-3 group"
+            aria-label="Jump Alien — back to home"
+          >
             <img
               src="/assets/alien.png"
               alt="Jump Alien"
