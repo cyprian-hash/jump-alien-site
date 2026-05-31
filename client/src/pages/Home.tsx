@@ -290,9 +290,9 @@ export default function Home() {
           <div className="flex-1 flex justify-center lg:justify-end">
             <div className="animate-float">
               <img
-                src="/assets/alien-rocket.png"
-                alt="Jump Alien character flying with a jetpack"
-                className="w-48 md:w-64 lg:w-80 drop-shadow-[0_0_40px_rgba(126,211,33,0.4)]"
+                src="/assets/hero-spaceship.png"
+                alt="Jump Alien spaceship in flight with cyan halo and flame trail"
+                className="w-56 md:w-72 lg:w-96 drop-shadow-[0_0_50px_rgba(126,211,33,0.4)]"
               />
             </div>
           </div>
@@ -402,9 +402,9 @@ export default function Home() {
           <ScrollReveal>
             <div className="animate-float inline-block mb-8">
               <img
-                src="/assets/alien-rocket.png"
+                src="/assets/hero-spaceship.png"
                 alt="Jump Alien"
-                className="w-24 md:w-32 drop-shadow-[0_0_30px_rgba(126,211,33,0.4)]"
+                className="w-32 md:w-40 drop-shadow-[0_0_30px_rgba(126,211,33,0.4)]"
               />
             </div>
           </ScrollReveal>
