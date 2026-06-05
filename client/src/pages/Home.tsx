@@ -344,14 +344,13 @@ export default function Home() {
               <span className="text-alien-green glow-green">Gameplay</span>
             </h2>
             <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-16">
-              A side-scrolling endless runner across the lunar surface. Jump
-              the asteroids. Snatch the stars. Catch a rocket and launch.
+              A vertical swinging climber in deep space. Tap and hold to attach energy tethers to beacons, swing to gain momentum, and launch upwards while dodging asteroids.
             </p>
           </ScrollReveal>
 
           <ScrollReveal>
-            <div className="max-w-5xl mx-auto px-2">
-              <IPhoneFrame orientation="landscape">
+            <div className="max-w-[310px] mx-auto px-2">
+              <IPhoneFrame orientation="portrait">
                 <InteractiveDemo />
               </IPhoneFrame>
             </div>

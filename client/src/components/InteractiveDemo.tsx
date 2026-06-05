@@ -22,6 +22,7 @@ interface AsteroidItem {
   x: number;
   y: number;
   size: number;
+  vx: number;
   angle: number;
   rotSpeed: number;
 }
@@ -41,7 +42,6 @@ export function InteractiveDemo() {
   const [isHolding, setIsHolding] = useState(false);
   const isHoldingRef = useRef(false);
 
-  // Load image
   const shipImageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
@@ -63,24 +63,24 @@ export function InteractiveDemo() {
     let width = canvas.width;
     let height = canvas.height;
 
-    // Game variables
+    // Game variables - Vertical Climber style
     let ship = {
-      x: 100,
-      y: 150,
-      vx: 4,
-      vy: 0,
-      radius: 16,
+      x: width / 2,
+      y: height - 120,
+      vx: 0,
+      vy: -3,
+      radius: 15,
       angle: 0,
     };
 
-    let gravity = 0.18;
+    let gravity = 0.16;
     let tetherLength = 0;
     let activeAnchor: BeaconItem | null = null;
     let tetherAngle = 0;
     let angularVelocity = 0;
 
-    let scrollX = 0;
-    let altitude = 0;
+    let cameraY = 0; // Camera offset following the ship upward
+    let scoreHeight = 0;
 
     // Arrays for game objects
     let stars: StarItem[] = [];
@@ -89,7 +89,6 @@ export function InteractiveDemo() {
     let backgroundStars: { x: number; y: number; size: number; speed: number }[] = [];
     let particles: Particle[] = [];
 
-    // Initialize background stars
     const initBgStars = () => {
       backgroundStars = [];
       for (let i = 0; i < 40; i++) {
@@ -97,56 +96,43 @@ export function InteractiveDemo() {
           x: Math.random() * width,
           y: Math.random() * height,
           size: Math.random() * 1.5 + 0.5,
-          speed: Math.random() * 0.5 + 0.1,
+          speed: Math.random() * 0.3 + 0.1, // slow downward drift
         });
       }
     };
 
     const resetGame = () => {
+      width = canvas.width;
+      height = canvas.height;
       ship = {
-        x: 120,
-        y: 180,
-        vx: 4.5,
-        vy: -2,
-        radius: 16,
+        x: width / 2,
+        y: height - 120,
+        vx: 1.5,
+        vy: -4,
+        radius: 15,
         angle: 0,
       };
       activeAnchor = null;
       setScore(0);
       setGameOver(false);
-      scrollX = 0;
-      altitude = 0;
+      cameraY = 0;
+      scoreHeight = 0;
       stars = [];
       asteroids = [];
       beacons = [];
       particles = [];
       
-      // Seed initial objects
-      for (let i = 0; i < 5; i++) {
-        const x = 300 + i * 250;
-        beacons.push({ x, y: 80 + Math.random() * 100, pulse: Math.random() });
-        if (i > 0) {
-          asteroids.push({
-            x: x - 120,
-            y: 150 + Math.random() * 120,
-            size: 15 + Math.random() * 12,
-            angle: Math.random() * Math.PI,
-            rotSpeed: (Math.random() - 0.5) * 0.04,
-          });
-          stars.push({
-            x: x - 60,
-            y: 100 + Math.random() * 140,
-            collected: false,
-            pulse: Math.random(),
-          });
-        }
-      }
+      // Spawn starting beacons (above the player)
+      beacons.push({ x: width * 0.5, y: height - 260, pulse: Math.random() });
+      beacons.push({ x: width * 0.3, y: height - 420, pulse: Math.random() });
+      beacons.push({ x: width * 0.7, y: height - 580, pulse: Math.random() });
+      beacons.push({ x: width * 0.4, y: height - 740, pulse: Math.random() });
     };
 
     const resize = () => {
       const rect = containerRef.current?.getBoundingClientRect();
-      width = canvas.width = rect?.width || 800;
-      height = canvas.height = rect?.height || 450;
+      width = canvas.width = rect?.width || 280;
+      height = canvas.height = rect?.height || 600;
       initBgStars();
       resetGame();
     };
@@ -155,37 +141,64 @@ export function InteractiveDemo() {
     const update = () => {
       if (gameOver) return;
 
-      altitude += 0.2;
-
       // Update background stars
       backgroundStars.forEach((star) => {
-        star.x -= star.speed;
-        if (star.x < 0) star.x = width;
+        star.y += star.speed;
+        if (star.y > height) {
+          star.y = 0;
+          star.x = Math.random() * width;
+        }
       });
 
-      // Spawn new elements ahead
-      const lastBeacon = beacons[beacons.length - 1];
-      if (lastBeacon && lastBeacon.x < width + 300) {
-        const x = lastBeacon.x + 240 + Math.random() * 80;
-        const y = 80 + Math.random() * 90;
-        beacons.push({ x, y, pulse: Math.random() });
+      // Camera follow logic: scroll view up if ship climbs past the center
+      const targetScreenY = height * 0.45;
+      if (ship.y < targetScreenY) {
+        const diff = targetScreenY - ship.y;
+        cameraY += diff;
+        ship.y += diff; // keep ship in place relative to screen
 
-        if (Math.random() < 0.6) {
-          asteroids.push({
-            x: x - 110,
-            y: 80 + Math.random() * 180,
-            size: 14 + Math.random() * 13,
-            angle: Math.random() * Math.PI,
-            rotSpeed: (Math.random() - 0.5) * 0.05,
+        // Shift existing elements down
+        beacons.forEach((b) => (b.y += diff));
+        asteroids.forEach((a) => (a.y += diff));
+        stars.forEach((s) => (s.y += diff));
+        particles.forEach((p) => (p.y += diff));
+      }
+
+      // Keep tracking the height score
+      const currentAltitude = Math.floor(cameraY / 10);
+      if (currentAltitude > scoreHeight) {
+        scoreHeight = currentAltitude;
+        setScore(scoreHeight + Math.floor(scoreHeight / 10)); // altitude points
+      }
+
+      // Spawn new elements at the top of the viewport
+      const highestBeacon = beacons.reduce((min, b) => (b.y < min ? b.y : min), height);
+      if (highestBeacon > -250) {
+        const spawnY = highestBeacon - (140 + Math.random() * 50);
+        const spawnX = 40 + Math.random() * (width - 80);
+        beacons.push({ x: spawnX, y: spawnY, pulse: Math.random() });
+
+        // Spawn collectible star shards
+        if (Math.random() < 0.65) {
+          stars.push({
+            x: 40 + Math.random() * (width - 80),
+            y: spawnY + 60,
+            collected: false,
+            pulse: Math.random(),
           });
         }
 
-        if (Math.random() < 0.7) {
-          stars.push({
-            x: x - 50,
-            y: 60 + Math.random() * 200,
-            collected: false,
-            pulse: Math.random(),
+        // Spawn drifting obstacles (asteroids)
+        if (Math.random() < 0.5) {
+          const size = 12 + Math.random() * 10;
+          const leftSide = Math.random() < 0.5;
+          asteroids.push({
+            x: leftSide ? -30 : width + 30,
+            y: spawnY - 40,
+            size,
+            vx: (0.6 + Math.random() * 0.8) * (leftSide ? 1 : -1),
+            angle: Math.random() * Math.PI,
+            rotSpeed: (Math.random() - 0.5) * 0.04,
           });
         }
       }
@@ -193,18 +206,20 @@ export function InteractiveDemo() {
       // Handle holding/swinging mechanics
       if (isHoldingRef.current) {
         if (!activeAnchor) {
-          // Find nearest beacon ahead of ship
+          // Find nearest beacon ABOVE the ship
           let bestBeacon: BeaconItem | null = null;
-          let bestDist = 280;
+          let bestDist = 240; // Max tether distance
 
           for (const b of beacons) {
-            const dx = b.x - ship.x;
-            const dy = b.y - ship.y;
-            const d = Math.sqrt(dx * dx + dy * dy);
-            // Anchor must be ahead/above and within tether range
-            if (d < bestDist && b.x > ship.x - 20) {
-              bestDist = d;
-              bestBeacon = b;
+            // Anchor must be above the ship
+            if (b.y < ship.y) {
+              const dx = b.x - ship.x;
+              const dy = b.y - ship.y;
+              const d = Math.sqrt(dx * dx + dy * dy);
+              if (d < bestDist) {
+                bestDist = d;
+                bestBeacon = b;
+              }
             }
           }
 
@@ -215,8 +230,7 @@ export function InteractiveDemo() {
             tetherLength = Math.sqrt(dx * dx + dy * dy);
             tetherAngle = Math.atan2(dy, dx);
             
-            // Calculate initial angular velocity based on linear velocity
-            // v = omega * r => omega = v / r
+            // v = omega * r => omega = (vx * sin - vy * cos) / r
             const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
             const relativeAngle = Math.atan2(ship.vy, ship.vx);
             const angleDiff = relativeAngle - tetherAngle;
@@ -225,70 +239,51 @@ export function InteractiveDemo() {
         }
 
         if (activeAnchor) {
-          // Swing physics (gravity affects the angle of rotation)
+          // Swing physics (gravity pulls downwards)
           const gEffect = -0.003 * Math.cos(tetherAngle);
           angularVelocity += gEffect;
-          angularVelocity *= 0.992; // subtle damping to feel tight
+          angularVelocity *= 0.994; // tight orbit damping
           tetherAngle += angularVelocity;
 
-          // Constraints
+          // Tether constraint position updates
           ship.x = activeAnchor.x + tetherLength * Math.cos(tetherAngle);
           ship.y = activeAnchor.y + tetherLength * Math.sin(tetherAngle);
 
           // Update velocities
           ship.vx = -tetherLength * angularVelocity * Math.sin(tetherAngle);
           ship.vy = tetherLength * angularVelocity * Math.cos(tetherAngle);
+          
+          // Rotate ship pointing tangentially in direction of motion
           ship.angle = tetherAngle + Math.PI / 2;
         } else {
-          // Normal flight if no anchor found
+          // Normal free fall with gravity
           ship.vy += gravity;
+          ship.x += ship.vx;
           ship.y += ship.vy;
-          ship.angle = Math.atan2(ship.vy, 5) + 0.1;
+          ship.angle = ship.vx * 0.05; // tilt slightly based on horizontal speed
         }
       } else {
-        // Release hook
+        // Free fall
         activeAnchor = null;
         ship.vy += gravity;
+        ship.x += ship.vx;
         ship.y += ship.vy;
-        ship.angle = Math.atan2(ship.vy, 5) + 0.1;
+        ship.angle = ship.vx * 0.05;
       }
 
-      // Boundaries & screen scrolling
-      // We simulate horizontal scroll by shifting all objects left
-      const speedOffset = activeAnchor ? ship.vx * 0.45 : ship.vx;
-      const scrollSpeed = Math.max(1.5, speedOffset);
-
-      // Shift objects
-      beacons.forEach((b) => (b.x -= scrollSpeed));
-      asteroids.forEach((a) => (a.x -= scrollSpeed));
-      stars.forEach((s) => (s.x -= scrollSpeed));
-      particles.forEach((p) => (p.x -= scrollSpeed));
-
-      // Limit ship vertical boundaries
-      if (ship.y < 20) {
-        ship.y = 20;
-        ship.vy = 0;
-      }
-      if (ship.y > height - 35) {
-        triggerCrash();
+      // Horizontal wrapping (Pac-Man style wrapping matching the iOS app)
+      const margin = 15;
+      if (ship.x < -margin) {
+        ship.x = width + margin;
+      } else if (ship.x > width + margin) {
+        ship.x = -margin;
       }
 
-      // Add thruster trail particles
-      if (Math.random() < 0.6) {
-        const offsetDist = -18;
-        const px = ship.x + offsetDist * Math.cos(ship.angle);
-        const py = ship.y + offsetDist * Math.sin(ship.angle);
-        particles.push({
-          x: px,
-          y: py,
-          vx: -scrollSpeed * 0.2 - Math.cos(ship.angle) * 1,
-          vy: (Math.random() - 0.5) * 0.8,
-          size: Math.random() * 4 + 2,
-          color: "rgba(126, 211, 33, 0.75)",
-          alpha: 1.0,
-          life: 30,
-        });
-      }
+      // Update asteroid positions (drift horizontally)
+      asteroids.forEach((a) => {
+        a.x += a.vx;
+        a.angle += a.rotSpeed;
+      });
 
       // Update particles
       particles.forEach((p) => {
@@ -298,26 +293,45 @@ export function InteractiveDemo() {
       });
       particles = particles.filter((p) => p.alpha > 0);
 
+      // Add thruster trail particles
+      if (Math.random() < 0.6) {
+        // Emit particles from bottom of the ship
+        const angleOffset = ship.angle + Math.PI / 2;
+        const px = ship.x + 14 * Math.cos(angleOffset);
+        const py = ship.y + 14 * Math.sin(angleOffset);
+        particles.push({
+          x: px,
+          y: py,
+          vx: (Math.random() - 0.5) * 0.6 + Math.cos(angleOffset) * 1.2,
+          vy: Math.sin(angleOffset) * 1.5 + 0.5,
+          size: Math.random() * 4.5 + 1.5,
+          color: "rgba(126, 211, 33, 0.8)",
+          alpha: 1.0,
+          life: 25,
+        });
+      }
+
       // Collision checks: Stars
       stars.forEach((s) => {
         if (!s.collected) {
           const dx = s.x - ship.x;
           const dy = s.y - ship.y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < ship.radius + 14) {
+          if (d < ship.radius + 12) {
             s.collected = true;
             setScore((prev) => prev + 15);
-            // Spawn splash particles
+            
+            // Collect sparks
             for (let i = 0; i < 8; i++) {
               particles.push({
                 x: s.x,
                 y: s.y,
-                vx: (Math.random() - 0.5) * 4,
-                vy: (Math.random() - 0.5) * 4,
-                size: Math.random() * 3 + 1.5,
-                color: "rgba(255, 235, 59, 1.0)",
+                vx: (Math.random() - 0.5) * 3,
+                vy: (Math.random() - 0.5) * 3,
+                size: Math.random() * 2.5 + 1.2,
+                color: "#ffeb3b",
                 alpha: 1.0,
-                life: 20,
+                life: 18,
               });
             }
           }
@@ -329,15 +343,20 @@ export function InteractiveDemo() {
         const dx = a.x - ship.x;
         const dy = a.y - ship.y;
         const d = Math.sqrt(dx * dx + dy * dy);
-        if (d < ship.radius + a.size - 3) {
+        if (d < ship.radius + a.size - 2) {
           triggerCrash();
         }
       });
 
-      // Remove offscreen elements
-      beacons = beacons.filter((b) => b.x > -100);
-      asteroids = asteroids.filter((a) => a.x > -100);
-      stars = stars.filter((s) => s.x > -100 && !s.collected);
+      // Check for falling below screen boundary (camera view bottom)
+      if (ship.y > height + 20) {
+        triggerCrash();
+      }
+
+      // Cleanup offscreen items
+      beacons = beacons.filter((b) => b.y < height + 100);
+      asteroids = asteroids.filter((a) => a.y < height + 100 && a.x > -50 && a.x < width + 50);
+      stars = stars.filter((s) => s.y < height + 100 && !s.collected);
     };
 
     const triggerCrash = () => {
@@ -345,22 +364,22 @@ export function InteractiveDemo() {
       activeAnchor = null;
       isHoldingRef.current = false;
       setIsHolding(false);
-      
-      // Explosion particles
-      for (let i = 0; i < 25; i++) {
+
+      // Particle explosion
+      for (let i = 0; i < 20; i++) {
         particles.push({
           x: ship.x,
           y: ship.y,
-          vx: (Math.random() - 0.5) * 6 - 2,
-          vy: (Math.random() - 0.5) * 6,
-          size: Math.random() * 6 + 3,
-          color: i % 2 === 0 ? "rgba(244, 67, 54, 0.9)" : "rgba(255, 152, 0, 0.9)",
+          vx: (Math.random() - 0.5) * 5,
+          vy: (Math.random() - 0.5) * 5 - 1,
+          size: Math.random() * 5.5 + 2,
+          color: i % 2 === 0 ? "#f44336" : "#ff9800",
           alpha: 1.0,
-          life: 40,
+          life: 35,
         });
       }
 
-      // Auto-restart after 1.5 seconds
+      // Restart
       setTimeout(() => {
         resetGame();
       }, 1500);
@@ -370,125 +389,52 @@ export function InteractiveDemo() {
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // 1. Draw Starry Space Background
+      // Deep space space background
       const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, "#03030a");
-      grad.addColorStop(1, "#0a0715");
+      grad.addColorStop(0, "#03030b");
+      grad.addColorStop(1, "#090614");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw background stars
+      // Background stars
       ctx.fillStyle = "#ffffff";
       backgroundStars.forEach((star) => {
-        ctx.globalAlpha = 0.3 + 0.7 * Math.sin(Date.now() * 0.003 + star.x);
+        ctx.globalAlpha = 0.25 + 0.75 * Math.sin(Date.now() * 0.002 + star.y);
         ctx.fillRect(star.x, star.y, star.size, star.size);
       });
       ctx.globalAlpha = 1.0;
 
-      // Draw bumpy moon ground line at the bottom
-      ctx.fillStyle = "#1e1e24";
-      ctx.beginPath();
-      ctx.moveTo(0, height);
-      for (let x = 0; x <= width; x += 30) {
-        const y = height - 12 - 5 * Math.sin(x * 0.015 + scrollX * 0.01);
-        ctx.lineTo(x, y);
+      // Draw initial ground if visible
+      const groundY = height - 15 + cameraY;
+      if (groundY < height + 100) {
+        ctx.fillStyle = "#1d1d24";
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(0, groundY);
+        for (let x = 0; x <= width; x += 20) {
+          const y = groundY - 4 * Math.sin(x * 0.02);
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(width, height);
+        ctx.fill();
       }
-      ctx.lineTo(width, height);
-      ctx.fill();
 
-      // 2. Draw Beacons/Anchors
-      beacons.forEach((b) => {
-        b.pulse += 0.05;
-        const glowRadius = 16 + 3 * Math.sin(b.pulse);
-        
-        // Outer glow
-        const radGrad = ctx.createRadialGradient(b.x, b.y, 2, b.x, b.y, glowRadius);
-        radGrad.addColorStop(0, "rgba(0, 188, 212, 0.5)");
-        radGrad.addColorStop(1, "rgba(0, 188, 212, 0)");
-        ctx.fillStyle = radGrad;
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, glowRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Core
-        ctx.fillStyle = "#00bcd4";
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      });
-
-      // 3. Draw Stars
-      stars.forEach((s) => {
-        s.pulse += 0.08;
-        const scale = 1.0 + 0.15 * Math.sin(s.pulse);
-        
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.scale(scale, scale);
-        
-        // Gold Star Path
-        ctx.fillStyle = "#fec107";
-        ctx.beginPath();
-        for (let i = 0; i < 5; i++) {
-          ctx.lineTo(Math.cos(((18 + i * 72) * Math.PI) / 180) * 8, -Math.sin(((18 + i * 72) * Math.PI) / 180) * 8);
-          ctx.lineTo(Math.cos(((54 + i * 72) * Math.PI) / 180) * 4, -Math.sin(((54 + i * 72) * Math.PI) / 180) * 4);
-        }
-        ctx.closePath();
-        ctx.fill();
-        
-        ctx.restore();
-      });
-
-      // 4. Draw Asteroids
-      asteroids.forEach((a) => {
-        a.angle += a.rotSpeed;
-        ctx.save();
-        ctx.translate(a.x, a.y);
-        ctx.rotate(a.angle);
-        
-        ctx.fillStyle = "#484852";
-        ctx.strokeStyle = "#383842";
-        ctx.lineWidth = 2;
-        
-        // Draw bumpy rock circle
-        ctx.beginPath();
-        for (let i = 0; i < 8; i++) {
-          const angle = (i * Math.PI) / 4;
-          const r = a.size + (Math.sin(angle * 3 + a.size) * 3);
-          ctx.lineTo(r * Math.cos(angle), r * Math.sin(angle));
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        
-        // Draw crater detail
-        ctx.fillStyle = "#303038";
-        ctx.beginPath();
-        ctx.arc(-a.size / 3, -a.size / 4, a.size / 4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.restore();
-      });
-
-      // 5. Draw Swing Rope/Tether
+      // Draw tethers
       if (activeAnchor) {
         ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.8;
         ctx.shadowColor = "#ffffff";
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 8;
         
         ctx.beginPath();
         ctx.moveTo(activeAnchor.x, activeAnchor.y);
         ctx.lineTo(ship.x, ship.y);
         ctx.stroke();
         
-        ctx.shadowBlur = 0; // reset
+        ctx.shadowBlur = 0;
       }
 
-      // 6. Draw Trail Particles
+      // Draw particles
       particles.forEach((p) => {
         ctx.globalAlpha = p.alpha;
         ctx.fillStyle = p.color;
@@ -498,7 +444,73 @@ export function InteractiveDemo() {
       });
       ctx.globalAlpha = 1.0;
 
-      // 7. Draw Spaceship
+      // Draw Beacons/Anchors
+      beacons.forEach((b) => {
+        b.pulse += 0.04;
+        const outerRadius = 14 + 2.5 * Math.sin(b.pulse);
+        
+        const radGrad = ctx.createRadialGradient(b.x, b.y, 2, b.x, b.y, outerRadius);
+        radGrad.addColorStop(0, "rgba(0, 188, 212, 0.4)");
+        radGrad.addColorStop(1, "rgba(0, 188, 212, 0)");
+        ctx.fillStyle = radGrad;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, outerRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#00bcd4";
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+
+      // Draw Stars
+      stars.forEach((s) => {
+        s.pulse += 0.06;
+        const scale = 1.0 + 0.12 * Math.sin(s.pulse);
+        
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.scale(scale, scale);
+        
+        ctx.fillStyle = "#ffc107";
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          ctx.lineTo(Math.cos(((18 + i * 72) * Math.PI) / 180) * 7.5, -Math.sin(((18 + i * 72) * Math.PI) / 180) * 7.5);
+          ctx.lineTo(Math.cos(((54 + i * 72) * Math.PI) / 180) * 3.5, -Math.sin(((54 + i * 72) * Math.PI) / 180) * 3.5);
+        }
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+      });
+
+      // Draw Asteroids
+      asteroids.forEach((a) => {
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.angle);
+        
+        ctx.fillStyle = "#4a4a54";
+        ctx.strokeStyle = "#383840";
+        ctx.lineWidth = 1.5;
+        
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const angle = (i * Math.PI) / 4;
+          const r = a.size + (Math.sin(angle * 3 + a.size) * 2);
+          ctx.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.restore();
+      });
+
+      // Draw Spaceship (pointing UP by default at angle = 0)
       if (!gameOver) {
         ctx.save();
         ctx.translate(ship.x, ship.y);
@@ -506,12 +518,12 @@ export function InteractiveDemo() {
 
         const img = shipImageRef.current;
         if (img) {
-          // Space ship is horizontal 263x202, scale it down to appropriate size
-          const w = 48;
-          const h = 37;
+          // Native sizes: height is slightly taller than width
+          // Saucer is at the bottom, dome is at the top
+          const w = 36;
+          const h = 42;
           ctx.drawImage(img, -w / 2, -h / 2, w, h);
         } else {
-          // Fallback basic shape if image loading delayed
           ctx.fillStyle = "#7ed321";
           ctx.beginPath();
           ctx.arc(0, 0, ship.radius, 0, Math.PI * 2);
@@ -538,7 +550,6 @@ export function InteractiveDemo() {
     };
   }, [gameOver]);
 
-  // Hook touch controls
   const handleStart = () => {
     isHoldingRef.current = true;
     setIsHolding(true);
@@ -553,7 +564,7 @@ export function InteractiveDemo() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[19.5/9] overflow-hidden select-none cursor-pointer"
+      className="relative w-full aspect-[9/19.5] overflow-hidden select-none cursor-pointer"
       onMouseDown={handleStart}
       onMouseUp={handleEnd}
       onMouseLeave={handleEnd}
@@ -568,35 +579,34 @@ export function InteractiveDemo() {
     >
       <canvas ref={canvasRef} className="block w-full h-full" />
 
-      {/* Overlay details */}
-      <div className="absolute top-3 left-4 right-4 flex justify-between items-center pointer-events-none z-10 text-white font-mono text-[10px] sm:text-xs">
-        <div className="px-2 py-1 bg-black/55 rounded border border-white/10 backdrop-blur-sm">
-          SCORE: <span className="text-yellow-400 font-bold">{String(score).padStart(4, "0")}</span>
+      {/* Live HUD Overlay */}
+      <div className="absolute top-3 left-3 right-3 flex justify-between items-center pointer-events-none z-10 text-white font-mono text-[9px] sm:text-[11px]">
+        <div className="px-2 py-0.5 bg-black/60 rounded border border-white/10 backdrop-blur-sm">
+          ALTITUDE: <span className="text-cyan-400 font-bold">{score}m</span>
         </div>
         
-        {/* Glowing live indicator */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-alien-green/15 rounded border border-alien-green/30 backdrop-blur-sm text-alien-green font-bold">
-          <span className="w-1.5 h-1.5 bg-alien-green rounded-full animate-ping" />
-          PLAYABLE PREVIEW
+        <div className="flex items-center gap-1 px-2 py-0.5 bg-alien-green/15 rounded border border-alien-green/35 backdrop-blur-sm text-alien-green font-bold">
+          <span className="w-1.5 h-1.5 bg-alien-green rounded-full animate-pulse" />
+          PLAYABLE
         </div>
       </div>
 
-      {/* Tutorial prompt */}
+      {/* Starting Tutorial Prompt */}
       {!isPlaying && (
-        <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center pointer-events-none z-10 text-center px-4 animate-fade-in">
-          <div className="font-game text-alien-green glow-green text-lg sm:text-2xl md:text-3xl mb-2">
+        <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center pointer-events-none z-10 text-center px-4 animate-fade-in">
+          <div className="font-game text-alien-green glow-green text-lg sm:text-xl md:text-2xl mb-1.5">
             TAP & HOLD TO SWING
           </div>
-          <div className="text-[10px] sm:text-xs text-white/80 max-w-xs leading-relaxed uppercase tracking-wider font-mono">
-            Release to launch. Navigate the asteroids and collect stars.
+          <div className="text-[9px] sm:text-[10px] text-white/85 max-w-[170px] leading-relaxed uppercase tracking-wider font-mono">
+            Rope to beacons above. Release to launch upwards. Avoid asteroids!
           </div>
         </div>
       )}
 
-      {/* Crash/Respawn Overlay */}
+      {/* Crash Overlay */}
       {gameOver && (
-        <div className="absolute inset-0 bg-red-950/30 flex items-center justify-center pointer-events-none z-10 animate-fade-in">
-          <div className="font-game text-rocket-red glow-red text-2xl sm:text-4xl">
+        <div className="absolute inset-0 bg-red-950/20 flex items-center justify-center pointer-events-none z-10 animate-fade-in">
+          <div className="font-game text-rocket-red glow-red text-xl sm:text-2xl">
             CRASH DETECTED
           </div>
         </div>
