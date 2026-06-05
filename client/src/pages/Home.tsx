@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { APP_STORE_URL } from "@/lib/site";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
 import { HeroAnimation } from "@/components/HeroAnimation";
+import { InteractiveDemo } from "@/components/InteractiveDemo";
 
 /**
  * Jump Alien Home Page
@@ -351,11 +352,7 @@ export default function Home() {
           <ScrollReveal>
             <div className="max-w-5xl mx-auto px-2">
               <IPhoneFrame orientation="landscape">
-                <img
-                  src="/assets/gameplay-2x.png"
-                  alt="Jump Alien gameplay: alien in spaceship with flame trail soaring over the lunar surface"
-                  className="block w-full h-auto"
-                />
+                <InteractiveDemo />
               </IPhoneFrame>
             </div>
           </ScrollReveal>
