@@ -8,7 +8,7 @@ export function HeroAnimation() {
 
       {/* Layer 1: The Cratered Moon (Rotating background layer) */}
       <motion.div
-        className="absolute w-[60%] h-[60%] z-10 bottom-[10%] left-[10%]"
+        className="absolute w-[75%] h-[75%] z-10 top-[12.5%] left-[5%]"
         animate={{ rotate: 360 }}
         transition={{
           repeat: Infinity,
@@ -25,7 +25,7 @@ export function HeroAnimation() {
 
       {/* Layer 2: The Flying Saucer Spaceship (Cruising overlay layer) */}
       <motion.div
-        className="absolute w-[52%] h-[52%] z-30 top-[15%] right-[5%]"
+        className="absolute w-[40%] h-[40%] z-30 top-[30%] right-[3%]"
         animate={{
           y: [0, -12, 0],
           rotate: [-3, 3, -3],
