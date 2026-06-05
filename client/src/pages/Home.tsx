@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { APP_STORE_URL } from "@/lib/site";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
+import { HeroAnimation } from "@/components/HeroAnimation";
 
 /**
  * Jump Alien Home Page
@@ -212,28 +213,28 @@ export default function Home() {
               Jump Alien
             </span>
           </Link>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <a
               href="#features"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Features
             </a>
             <a
               href="#gameplay"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Gameplay
             </a>
             <Link
               href="/privacy"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Privacy
             </Link>
             <Link
               href="/support"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Support
             </Link>
@@ -276,13 +277,7 @@ export default function Home() {
           </div>
 
           <div className="flex-1 flex justify-center lg:justify-end">
-            <div className="animate-float">
-              <img
-                src="/assets/hero-spaceship.png"
-                alt="Jump Alien spaceship in flight with cyan halo and flame trail"
-                className="w-56 md:w-72 lg:w-96 drop-shadow-[0_0_50px_rgba(126,211,33,0.4)]"
-              />
-            </div>
+            <HeroAnimation />
           </div>
         </div>
 
