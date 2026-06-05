@@ -544,10 +544,7 @@ export function InteractiveDemo() {
         });
       }
 
-      // Auto-restart
-      setTimeout(() => {
-        resetGame();
-      }, 1500);
+
     };
 
     // Draw Loop
@@ -799,7 +796,7 @@ export function InteractiveDemo() {
 
   // Hook touch controls
   const handleStart = () => {
-    if (isPausedRef.current) return;
+    if (isPausedRef.current || gameOver) return;
     setIsPlaying(true);
     isHoldingRef.current = true;
 
@@ -911,12 +908,31 @@ export function InteractiveDemo() {
         </div>
       )}
 
-      {/* Crash/Respawn Overlay */}
+      {/* Crash/Respawn Game Over CTA Overlay */}
       {gameOver && (
-        <div className="absolute inset-0 bg-red-950/30 flex items-center justify-center pointer-events-none z-10 animate-fade-in">
-          <div className="font-game text-rocket-red glow-red text-2xl sm:text-4xl">
-            CRASH DETECTED
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-md flex flex-col items-center justify-center z-10 text-center px-6 animate-fade-in pointer-events-auto cursor-default" onClick={(e) => e.stopPropagation()}>
+          <div className="font-game text-rocket-red glow-red text-2xl sm:text-4xl md:text-5xl mb-3">
+            GAME OVER
           </div>
+          <p className="text-xs sm:text-sm text-white/90 max-w-sm leading-relaxed mb-6 font-sans">
+            You crashed! Compete for high scores and unlock achievements on the official app. Download Jump Alien now to continue running!
+          </p>
+          <a
+            href="https://apps.apple.com/us/app/jump-alien/id964680187"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block transition-transform duration-200 hover:scale-105 active:scale-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src="/assets/app-store-badge-white.svg"
+              alt="Download on the App Store"
+              className="h-11 sm:h-13"
+            />
+          </a>
+          <span className="text-[10px] text-muted-foreground mt-3 uppercase tracking-wider font-mono">
+            Free on iPhone & iPad
+          </span>
         </div>
       )}
     </div>
