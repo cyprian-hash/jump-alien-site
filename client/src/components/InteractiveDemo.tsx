@@ -301,30 +301,11 @@ export function InteractiveDemo() {
         player.vy += gravity;
         player.y += player.vy;
 
-        // Check if landing on top of asteroids (stands/rides them instead of crashing)
-        let onRock = false;
-        let rockY = groundY;
-
-        asteroids.forEach((a) => {
-          const px = player.x + player.width / 2;
-          const ax = a.x;
-          const horizontalOverlap = Math.abs(px - ax) < (a.size + player.width / 2 - 2);
-          const rockTopY = a.y - a.size;
-          
-          if (horizontalOverlap) {
-            if (player.y + player.height <= rockTopY + 8 && player.vy >= 0) {
-              onRock = true;
-              rockY = Math.min(rockY, rockTopY);
-            }
-          }
-        });
-
-        const effectiveGroundY = onRock ? rockY : groundY;
         const playerFootY = player.y + player.height;
 
         // Ground constraint
-        if (playerFootY >= effectiveGroundY) {
-          player.y = effectiveGroundY - player.height;
+        if (playerFootY >= groundY) {
+          player.y = groundY - player.height;
           player.vy = 0;
           player.canDoubleJump = true;
         }
@@ -477,17 +458,6 @@ export function InteractiveDemo() {
 
       // Collisions: Asteroids
       asteroids.forEach((a) => {
-        // Check if standing/landing on top of this asteroid
-        const px = player.x + player.width / 2;
-        const ax = a.x;
-        const horizontalOverlap = Math.abs(px - ax) < (a.size + player.width / 2 - 2);
-        const rockTopY = a.y - a.size;
-        const isStandingOnTop = horizontalOverlap && (player.y + player.height <= rockTopY + 8);
-
-        if (isStandingOnTop && activeMode === "running") {
-          return;
-        }
-
         const dx = a.x - (player.x + player.width / 2);
         const dy = a.y - (player.y + player.height / 2);
         const d = Math.sqrt(dx * dx + dy * dy);
