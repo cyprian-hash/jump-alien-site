@@ -39,6 +39,11 @@ export function InteractiveDemo() {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const gameOverRef = useRef(false);
+
+  useEffect(() => {
+    gameOverRef.current = gameOver;
+  }, [gameOver]);
   
   // States: "running" | "flying"
   const [gameStateMode, setGameStateMode] = useState<"running" | "flying">("running");
@@ -229,7 +234,7 @@ export function InteractiveDemo() {
 
     // Physics Loop
     const update = () => {
-      if (gameOver || isPausedRef.current || !isPlayingRef.current) return;
+      if (gameOverRef.current || isPausedRef.current || !isPlayingRef.current) return;
 
       const player = playerRef.current;
       const groundY = groundYRef.current;
@@ -464,14 +469,16 @@ export function InteractiveDemo() {
         if (d < a.size + 10) {
           if (activeMode === "flying") {
             // In spaceship rocket mode, we are shielded and smash through asteroids!
+            const rockX = a.x;
+            const rockY = a.y;
             a.x = -100; // remove it
             setScore((prev) => prev + 25); // bonus points for smashing
             
             // Rock explosion sparks
             for (let i = 0; i < 15; i++) {
               particles.push({
-                x: a.x + scrollSpeed,
-                y: a.y,
+                x: rockX,
+                y: rockY,
                 vx: (Math.random() - 0.5) * 5,
                 vy: (Math.random() - 0.5) * 5,
                 size: Math.random() * 3.5 + 1.5,
@@ -702,7 +709,7 @@ export function InteractiveDemo() {
       ctx.globalAlpha = 1.0;
 
       // Draw Player
-      if (!gameOver) {
+      if (!gameOverRef.current) {
         ctx.save();
         ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
         ctx.rotate(player.angle);
@@ -762,7 +769,7 @@ export function InteractiveDemo() {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationId);
     };
-  }, [gameOver]);
+  }, []);
 
   // Hook touch controls
   const handleStart = () => {
