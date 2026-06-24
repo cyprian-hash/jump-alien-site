@@ -227,6 +227,12 @@ export default function Home() {
             >
               Gameplay
             </a>
+            <a
+              href="#retro"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Retro
+            </a>
             <Link
               href="/privacy"
               className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -371,6 +377,105 @@ export default function Home() {
               ))}
             </div>
           </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Retro Series */}
+      <section id="retro" className="relative py-24 md:py-32">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background z-[1]" />
+
+        <div className="container relative z-10">
+          <ScrollReveal>
+            <h2 className="font-game text-3xl md:text-5xl text-center mb-4">
+              The <span className="text-alien-green glow-green">Retro Series</span>
+            </h2>
+            <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-16">
+              Love Jump Alien? Discover other arcade classics in our official retro-revival series.
+            </p>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Card 1: Jump Ozy */}
+            <ScrollReveal delay={0}>
+              <a
+                href="https://jumpozy.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass-card rounded-xl p-6 h-full flex flex-col items-center text-center hover:border-alien-green/30 transition-all duration-300 group hover:-translate-y-1 block"
+              >
+                <div className="h-32 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+                  <img
+                    src="/assets/ozy.png"
+                    alt="Jump Ozy character"
+                    className="max-h-full w-auto object-contain drop-shadow-[0_0_20px_rgba(251,191,36,0.35)]"
+                  />
+                </div>
+                <h3 className="text-lg font-game text-foreground mb-2 text-yellow-400">
+                  Jump Ozy
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-grow">
+                  Dodge obstacles and jump your way across uncharted worlds.
+                </p>
+                <span className="text-xs font-mono text-alien-green glow-green mt-auto group-hover:underline">
+                  jumpozy.com →
+                </span>
+              </a>
+            </ScrollReveal>
+
+            {/* Card 2: Angry Egg */}
+            <ScrollReveal delay={80}>
+              <a
+                href="https://angryegggame.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass-card rounded-xl p-6 h-full flex flex-col items-center text-center hover:border-alien-green/30 transition-all duration-300 group hover:-translate-y-1 block"
+              >
+                <div className="h-32 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+                  <img
+                    src="/assets/angry_egg.png"
+                    alt="Angry Egg character"
+                    className="max-h-full w-auto object-contain drop-shadow-[0_0_20px_rgba(239,68,68,0.35)]"
+                  />
+                </div>
+                <h3 className="text-lg font-game text-foreground mb-2 text-red-500">
+                  Angry Egg
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-grow">
+                  Help a furious egg bounce through dangerous hazards and spike traps.
+                </p>
+                <span className="text-xs font-mono text-alien-green glow-green mt-auto group-hover:underline">
+                  angryegggame.com →
+                </span>
+              </a>
+            </ScrollReveal>
+
+            {/* Card 3: Emoji Runner */}
+            <ScrollReveal delay={160}>
+              <a
+                href="https://emojirunner.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass-card rounded-xl p-6 h-full flex flex-col items-center text-center hover:border-alien-green/30 transition-all duration-300 group hover:-translate-y-1 block"
+              >
+                <div className="h-32 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+                  <img
+                    src="/assets/emoji_runner.png"
+                    alt="Emoji Runner character"
+                    className="max-h-full w-auto object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.35)]"
+                  />
+                </div>
+                <h3 className="text-lg font-game text-foreground mb-2 text-blue-400">
+                  Emoji Runner
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-grow">
+                  Sprint through a digital obstacle course of emojis and speed pads.
+                </p>
+                <span className="text-xs font-mono text-alien-green glow-green mt-auto group-hover:underline">
+                  emojirunner.com →
+                </span>
+              </a>
+            </ScrollReveal>
+          </div>
         </div>
       </section>
 
